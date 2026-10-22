@@ -1,0 +1,106 @@
+/* aside-rtl: right-to-left (Persian, Arabic, Hebrew) support for Aside's chat UI.
+   Installed by the aside-rtl skill (apply.sh copies it into every Aside version).
+   The script (aside-rtl.js) marks text blocks dir="rtl" (with data-aside-rtl) when they hold more
+   Persian/Arabic/Hebrew letters than Latin ones; the rules below style those blocks.
+   Persian/Arabic letters use Vazirmatn v33.003 (SIL Open Font License 1.1, see fonts/OFL.txt). */
+
+/* Font: Vazirmatn joins Aside's own font families for Arabic-script characters only, with the same
+   descriptors as Aside's faces, so Latin text keeps Geist and every Aside text style gets it. */
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(fonts/vazirmatn.woff2) format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: "Aside Display";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(fonts/vazirmatn.woff2) format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: "Geist Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(fonts/vazirmatn.woff2) format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+/* Persian needs more leading than Latin, and letter-spacing breaks the joins between letters. */
+.streamdown :is(p, li, blockquote, td, th, dt, dd)[data-aside-rtl][dir=rtl],
+[data-agent-session-ui] .whitespace-pre-wrap[data-aside-rtl][dir=rtl] {
+  line-height: 1.75;
+}
+[data-aside-rtl][dir=rtl],
+[data-aside-rtl][dir=rtl] * {
+  letter-spacing: normal;
+}
+
+/* Persian has no italics: emphasis is bold. */
+[data-aside-rtl][dir=rtl] :is(em, i, .italic),
+.streamdown blockquote[data-aside-rtl][dir=rtl] {
+  font-style: normal;
+}
+[data-aside-rtl][dir=rtl] :is(em, i) {
+  font-weight: 600;
+}
+
+/* Quotes: the bar moves to the right. */
+.streamdown blockquote[data-aside-rtl][dir=rtl] {
+  border-left-width: 0;
+  border-right-width: 4px;
+  border-right-style: solid;
+  padding-left: 0;
+  padding-right: calc(var(--spacing) * 4);
+}
+
+/* Nested lists indent from the right. */
+.streamdown li :is(ul, ol)[data-aside-rtl][dir=rtl] {
+  padding-left: 0;
+  padding-right: calc(var(--spacing) * 6);
+}
+.text-xs .streamdown [data-streamdown=unordered-list][data-aside-rtl][dir=rtl] {
+  padding-left: 0;
+  padding-right: 14px;
+}
+.text-xs .streamdown li [data-streamdown=ordered-list][data-aside-rtl][dir=rtl] {
+  padding-left: 0;
+  padding-right: 12px;
+}
+
+/* Tables: cells align right, and the first (rightmost) column sits flush with the edge. */
+.streamdown :is(th, td)[data-aside-rtl][dir=rtl] {
+  text-align: right;
+}
+.streamdown table[data-aside-rtl][dir=rtl] :is(th, td):first-child {
+  padding-left: calc(var(--spacing) * 3);
+  padding-right: 0;
+}
+.text-xs .streamdown table[data-aside-rtl][dir=rtl] :is(th, td):first-child {
+  padding-left: calc(var(--spacing) * 2);
+  padding-right: 0;
+}
+
+/* One-line labels (chat titles in headers and lists): the words read right-to-left, but the label
+   keeps its place in the layout instead of jumping to the right edge. */
+.truncate[data-aside-rtl]:not(.text-right, .text-center, .text-end) {
+  text-align: left;
+}
+
+/* Code and math stay left-to-right, also inside a Persian list or quote. */
+[data-aside-rtl][dir=rtl] :is(pre, [data-streamdown=code-block], [data-streamdown=mermaid-block], .katex-display) {
+  direction: ltr;
+  text-align: left;
+}
+[data-aside-rtl][dir=rtl] :is([data-streamdown=inline-code], code:not(pre code)) {
+  unicode-bidi: plaintext;
+}
+[data-aside-rtl][dir=rtl] .katex {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
