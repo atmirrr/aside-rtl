@@ -1,6 +1,6 @@
 ---
 name: "aside-rtl"
-description: "Add right-to-left support and a proper Persian/Arabic font (Vazirmatn) to Aside's own chat UI on macOS: side panel, full chat page, side chats, chat titles and the message box. Use when the user says Persian, Farsi, Arabic or Hebrew text in Aside looks left-aligned, scrambled or in the wrong font, asks for RTL in Aside, or wants to update, check or remove this patch."
+description: "Add right-to-left support and the Vazirmatn font to Aside's own chat UI on macOS: side panel, full chat page, side chats, chat titles and the message box. Use when right-to-left text in Aside looks left-aligned, scrambled or in the wrong font, when the user asks for RTL in Aside, or wants to update, check or remove this patch."
 ---
 
 # Aside RTL

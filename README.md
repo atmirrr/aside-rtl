@@ -1,8 +1,8 @@
 # aside-rtl
 
 An [Aside](https://asidehq.com) skill that adds right-to-left support and the Vazirmatn font to
-Aside's own chat UI on macOS. Persian, Arabic and Hebrew replies, your messages, chat titles and
-the message box are aligned right-to-left, and code stays left-to-right. The patch is
+Aside's own chat UI on macOS. Right-to-left replies, your messages, chat titles and the message
+box are aligned right-to-left, and code stays left-to-right. The patch is
 re-applied automatically after Aside updates.
 
 ## Install
