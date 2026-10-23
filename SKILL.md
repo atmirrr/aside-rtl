@@ -5,11 +5,18 @@ description: "Add right-to-left support and the Vazirmatn font to Aside's own ch
 
 # Aside RTL
 
-Aside has no custom-CSS setting. Its chat UI is a built-in extension unpacked at
-`~/Library/Application Support/Aside/AsideAgentManager/<version>/`, and edited files there load
-after a page reload. This skill copies a small CSS + JS patch into every version folder, links it
-from each page that loads Aside's stylesheet, and installs a LaunchAgent that re-applies it when
-an Aside update adds a new version folder.
+Aside has no custom-CSS setting. Its chat UI is a built-in extension, and edited files load after
+a page reload. Where it lives depends on the build:
+- older builds: `~/Library/Application Support/Aside/AsideAgentManager/<version>/`
+- newer builds (browser 1.0.1022 and later): inside the app, at
+  `/Applications/Aside.app/Contents/Frameworks/Aside Framework.framework/Versions/<app version>/Libraries/AsideAgentManager/`.
+  The Application Support folder is then empty, and a copy placed there is deleted at the next launch.
+
+This skill copies a small CSS + JS patch into each copy it finds, links it from each page that
+loads Aside's stylesheet, and installs a LaunchAgent that re-applies it after Aside updates. Pages
+inside the app are backed up to `~/.aside-rtl/bundle-backup/<app version>/` before the first edit.
+Editing files inside the app breaks its code-signature seal (`codesign --verify` reports it);
+Aside still launches and runs normally, and `uninstall.sh` puts the original pages back.
 
 What it does:
 - A text block becomes `dir="rtl"` when it has more Persian/Arabic/Hebrew letters than Latin ones
@@ -31,7 +38,7 @@ zsh <this-skill-dir>/scripts/install.sh --no-agent # apply once, no background j
 ```
 
 Re-running is safe and also updates an existing install. Then check `~/.aside-rtl/apply.log`
-lists every installed version as patched, and tell the user to close and reopen the side panel
+lists every copy as patched (app copies are logged as `app <version>`), and tell the user to close and reopen the side panel
 (or reload chat pages); pages open before the install keep the old look. The LaunchAgent costs
 about 0.1 s of CPU per run (login, folder change, every 10 minutes).
 
@@ -46,7 +53,8 @@ zsh ~/.aside-rtl/uninstall.sh
 ```
 
 It stops the LaunchAgent first (otherwise it re-applies at once), restores every page byte for
-byte and deletes `~/.aside-rtl`.
+byte (app pages from the backup) and deletes `~/.aside-rtl`. If Aside ever refuses to open after
+a patch, this is the fix.
 
 ## Changing it or fixing it after an Aside update
 
@@ -63,4 +71,5 @@ names start with a dash).
 Known limits: a Persian paragraph that holds a long Latin path stays LTR (majority rule); a
 Persian phrase inside an English paragraph is left alone; a Latin word glued to a Persian suffix
 without a ZWNJ looks odd, which is normal bidi. macOS only. Windows Aside keeps its files
-elsewhere and is not covered.
+elsewhere and is not covered. If the app was installed by another user or an admin and is not
+writable, the in-app copy is skipped (logged as `not writable`).

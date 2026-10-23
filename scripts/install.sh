@@ -1,18 +1,28 @@
 #!/bin/zsh
-# Installs aside-rtl: copies the patch to ~/.aside-rtl, applies it to every installed Aside
-# version and adds the LaunchAgent com.aside-rtl so Aside updates get patched too.
+# Installs aside-rtl: copies the patch to ~/.aside-rtl, applies it to Aside's chat extension
+# (in Application Support on older builds, inside Aside.app on newer ones) and adds the
+# LaunchAgent com.aside-rtl so Aside updates get patched too.
 #   zsh install.sh              install or update
 #   zsh install.sh --no-agent   apply once, no background LaunchAgent
-# ASIDE_RTL_HOME overrides the install folder.
+# ASIDE_RTL_HOME overrides the install folder, ASIDE_RTL_BASE / ASIDE_RTL_APP the Aside locations.
 set -eu
 [[ $(uname) == Darwin ]] || { print -u2 "aside-rtl: macOS only"; exit 1; }
 SKILL=${0:A:h:h}
 DEST=${ASIDE_RTL_HOME:-$HOME/.aside-rtl}
 BASE=${ASIDE_RTL_BASE:-"$HOME/Library/Application Support/Aside/AsideAgentManager"}
+APP=${ASIDE_RTL_APP:-/Applications/Aside.app}
+VERSIONS="$APP/Contents/Frameworks/Aside Framework.framework/Versions"
 LABEL=com.aside-rtl
 PLIST=$HOME/Library/LaunchAgents/$LABEL.plist
 
-[[ -d $BASE ]] || { print -u2 "aside-rtl: Aside's chat extension folder not found: $BASE"; exit 1; }
+bundles=("$VERSIONS"/*/Libraries/AsideAgentManager(N/))
+if [[ ! -d $BASE ]] && (( ! ${#bundles} )); then
+  print -u2 "aside-rtl: Aside's chat extension not found in $BASE or $APP"; exit 1
+fi
+if (( ${#bundles} )); then
+  print "note: this Aside build keeps its chat UI inside the app. Editing it breaks the app's code"
+  print "      signature seal; Aside keeps working, and uninstall.sh restores the original pages."
+fi
 
 mkdir -p "$DEST"
 rm -rf "$DEST/patch"
@@ -30,7 +40,7 @@ if [[ ${1:-} != --no-agent ]]; then
   <key>ProgramArguments</key>
   <array><string>/bin/zsh</string><string>$DEST/apply.sh</string></array>
   <key>WatchPaths</key>
-  <array><string>$BASE</string></array>
+  <array><string>$BASE</string><string>$VERSIONS</string></array>
   <key>RunAtLoad</key><true/>
   <key>StartInterval</key><integer>600</integer>
   <key>StandardErrorPath</key><string>$DEST/apply.err.log</string>
@@ -45,7 +55,7 @@ fi
 zsh "$DEST/apply.sh"
 print "aside-rtl installed in $DEST"
 tail -n 5 "$DEST/apply.log" 2>/dev/null || true
-if grep -lq 'aside-ui-patch' "$BASE"/*/*.html(N) 2>/dev/null; then
+if grep -lq 'aside-ui-patch' "$BASE"/*/*.html(N) "$VERSIONS"/*/Libraries/AsideAgentManager/*.html(N) 2>/dev/null; then
   print "note: an older aside-ui-patch is also injected; remove it so both don't run."
 fi
 print "Reopen the Aside side panel (or reload chat pages) to see it."
